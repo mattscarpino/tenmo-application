@@ -16,8 +16,10 @@ import java.util.List;
 public class JdbcUserDao implements UserDao {
 
     private JdbcTemplate jdbcTemplate;
+    private JdbcAccountDao jdbcAccountDao;
 
-    public JdbcUserDao(JdbcTemplate jdbcTemplate) {
+    public JdbcUserDao(JdbcTemplate jdbcTemplate, JdbcAccountDao jdbcAccountDao) {
+        this.jdbcAccountDao = jdbcAccountDao;
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -66,10 +68,10 @@ public class JdbcUserDao implements UserDao {
         } catch (DataAccessException e) {
             return false;
         }
-
         // TODO: Create the account record with initial balance
+        boolean accountCreated = jdbcAccountDao.create(newUserId);
 
-        return true;
+        return accountCreated;
     }
 
     private User mapRowToUser(SqlRowSet rs) {
