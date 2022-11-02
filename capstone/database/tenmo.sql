@@ -43,7 +43,7 @@ CREATE TABLE transaction
 	transaction_id int NOT NULL DEFAULT nextval('seq_transaction_id'),
 	sender_id int NOT NULL,
 	transfer_amount decimal(13,2) NOT NULL,
-	reciever_id int NOT NULL,
+	receiver_id int NOT NULL,
 	CONSTRAINT PK_transaction PRIMARY KEY (transaction_id),
 	CONSTRAINT FK_account_transaction_user FOREIGN KEY (sender_id) REFERENCES account (account_id),
 	CONSTRAINT FK_account_transaction_other FOREIGN KEY (reciever_id) REFERENCES account (account_id)

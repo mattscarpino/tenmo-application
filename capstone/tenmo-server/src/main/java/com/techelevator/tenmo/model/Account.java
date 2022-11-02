@@ -23,4 +23,17 @@ public class Account {
     public double getBalance() {
         return balance;
     }
+
+    public void addToBalance(double money){
+        balance += money;
+    }
+
+    public void subtractFromBalance(double money){
+        balance -= money;
+    }
+
+    @Override
+    public String toString(){
+        return "user_id: " + user_id + "\naccount_id: " + account_id + "\nbalance: " + balance;
+    }
 }

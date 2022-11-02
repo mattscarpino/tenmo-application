@@ -34,19 +34,24 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public List<Account> getAccountsById(int user_id) {
+    public Account getAccountsById(int user_id) {
         String sql = "SELECT account_id, user_id, balance\n" +
                 "FROM account\n" +
                 "WHERE user_id = ?;";
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql,user_id);
-        List<Account> accounts = new ArrayList<>();
-        while(result.next()){
-            Account a = new Account(result.getInt("account_id"),
+        Account a = null;
+        if (result.next()){
+            a = new Account(result.getInt("account_id"),
                                     result.getInt("user_id"),
                                     result.getDouble("balance"));
-            accounts.add(a);
         }
-        return accounts;
+        return a;
+    }
+
+    @Override
+    public void update(int account_id, double balance) {
+        String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
+        this.jdbcTemplate.update(sql,balance,account_id);
     }
 }
