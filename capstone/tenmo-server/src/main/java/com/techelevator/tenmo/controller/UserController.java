@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.controller;
 
+import com.techelevator.tenmo.dao.JdbcUserDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -17,27 +19,35 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
-    private UserDao userdao;
+    private UserDao userDao;
 
     public UserController(UserDao userdao){
-        this.userdao = userdao;
+        this.userDao = userdao;
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @GetMapping()
-//    public List<User> getAllUsers(){
-//        return userdao.findAll();
-//    }
 
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
     @GetMapping()
     public User getCurrentUser(Principal principal){
-        return userdao.findByUsername(principal.getName());
+        return userDao.findByUsername(principal.getName());
     }
 
-//    @PreAuthorize("hasRole('USER')")
-//    @GetMapping("/list")
-//
 
+    @ResponseStatus(HttpStatus.FOUND)
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/list")
+    public List<String> listUsersForTransaction(){
+
+        List<User> user = this.userDao.listAllUsers();
+        List<String> idAndUsername = new ArrayList<>();
+        for(User u : user){
+            String word = "username: " + u.getUsername();
+            idAndUsername.add(word);
+            String www = "      user_id: " + u.getId();
+            idAndUsername.add(www);
+        }
+
+        return idAndUsername;
+    }
 }
