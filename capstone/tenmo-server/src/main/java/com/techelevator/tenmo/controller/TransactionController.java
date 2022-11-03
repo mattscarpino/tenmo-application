@@ -51,18 +51,19 @@ public class TransactionController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/{receiver_id}")
-    public void makeTransaction(@RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount){
+    public void initiateTransaction(@RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount){
 
         Account userAccount = accountDao.getAccountsById(sender_id);
 
+
         if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || sender_id == receiver_id){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make .");
         }
 
-        boolean b = transactionDao.create(sender_id,receiver_id,transfer_amount);
+        boolean b = transactionDao.sendTransaction(sender_id,receiver_id,transfer_amount);
 
         if (!b) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, " to make transaction");
         }
 
         Account otherAccount = accountDao.getAccountsById(receiver_id);

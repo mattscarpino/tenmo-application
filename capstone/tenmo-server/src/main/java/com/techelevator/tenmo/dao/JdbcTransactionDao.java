@@ -23,12 +23,12 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public boolean create(int sender_id, int receiver_id, double transfer_amount) {
-        String sql = "INSERT INTO transaction(sender_id, receiver_id, transfer_amount)\n" +
+    public boolean sendTransaction(int sender_id, int receiver_id, double transfer_amount) {
+        String sql = "INSERT INTO transaction(sender_id, receiver_id, transfer_amount, status)\n" +
                     "VALUES ((SELECT account_id FROM account WHERE user_id =?), " +
-                "(SELECT account_id FROM account WHERE user_id =?), ?);";
+                "(SELECT account_id FROM account WHERE user_id =?), ?, 'approved') RETURNING transaction_id;";
         try{
-            this.jdbcTemplate.queryForObject(sql, Integer.class, sender_id, receiver_id, transfer_amount);
+            Integer newId = this.jdbcTemplate.queryForObject(sql, Integer.class, sender_id, receiver_id, transfer_amount);
 
         } catch (DataAccessException e){
             return false;
@@ -39,7 +39,7 @@ public class JdbcTransactionDao implements TransactionDao{
 
     @Override
     public List<Transaction> listTransactionsByUserId(long user_id) {
-        String sql = "SELECT transaction_id, transfer_amount\n" +
+        String sql = "SELECT transaction_id, transfer_amount, status\n" +
                 "FROM transaction\n" +
                 "WHERE sender_id = (SELECT account_id FROM account WHERE user_id = ?) " +
                 "OR receiver_id = (SELECT account_id FROM account WHERE user_id = ?);";
@@ -55,7 +55,7 @@ public class JdbcTransactionDao implements TransactionDao{
 
     @Override
     public List<Transaction> listAllSentTransactions(long user_id) {
-        String sql = "SELECT transaction_id, transfer_amount\n" +
+        String sql = "SELECT transaction_id, transfer_amount, status\n" +
                 "FROM transaction\n" +
                 "WHERE sender_id = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, user_id);
@@ -70,7 +70,7 @@ public class JdbcTransactionDao implements TransactionDao{
 
     @Override
     public List<Transaction> listAllReceivedTransactions(long user_id) {
-        String sql = "SELECT transaction_id, transfer_amount\n" +
+        String sql = "SELECT transaction_id, transfer_amount, status\n" +
                 "FROM transaction\n" +
                 "WHERE receiver_id = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, user_id);
@@ -85,7 +85,7 @@ public class JdbcTransactionDao implements TransactionDao{
 
     @Override
     public Transaction findTransactionById(int transaction_id, long user_id) {
-        String sql = "SELECT transaction_id, transfer_amount " +
+        String sql = "SELECT transaction_id, transfer_amount, status " +
                 "FROM transaction " +
                 "WHERE transaction_id = ? AND (sender_id = (SELECT account_id FROM account WHERE user_id = ?) " +
                 "OR receiver_id = (SELECT account_id FROM account WHERE user_id = ?));";
@@ -101,6 +101,7 @@ public class JdbcTransactionDao implements TransactionDao{
         Transaction transaction = new Transaction();
         transaction.setTransaction_id(rowSet.getInt("transaction_id"));
         transaction.setTransfer_amount(rowSet.getDouble("transfer_amount"));
+        transaction.setStatus(rowSet.getString("status"));
         return transaction;
     }
 

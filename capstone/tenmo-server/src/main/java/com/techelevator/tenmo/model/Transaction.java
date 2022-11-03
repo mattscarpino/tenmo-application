@@ -6,16 +6,26 @@ public class Transaction {
     private int sender_id;
     private int receiver_id;
     private double transfer_amount;
+    private String status;
 
     public Transaction(){
 
     }
 
-    public Transaction(int transaction_id, int sender_id, int receiver_id, double transfer_amount) {
+    public Transaction(int transaction_id, int sender_id, int receiver_id, double transfer_amount, String status) {
         this.transaction_id = transaction_id;
         this.sender_id = sender_id;
         this.receiver_id = receiver_id;
         this.transfer_amount = transfer_amount;
+        this.status = status;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public int getTransaction_id() {
@@ -44,7 +54,7 @@ public class Transaction {
 
     @Override
     public String toString(){
-        return "transaction_id - " +transaction_id + "  |   transfer_amount - " + transfer_amount;
+        return "transaction_id - " +transaction_id + "  |   transfer_amount - " + transfer_amount + "  |   status - " + status;
     }
 
 }

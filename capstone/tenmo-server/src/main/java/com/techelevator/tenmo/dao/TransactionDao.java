@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface TransactionDao {
 
-    boolean create(int sender_id, int receiver_id, double transfer_amount);
+    boolean sendTransaction(int sender_id, int receiver_id, double transfer_amount);
     List<Transaction> listTransactionsByUserId(long user_id);
     List<Transaction> listAllSentTransactions(long user_id);
     List<Transaction> listAllReceivedTransactions(long user_id);
