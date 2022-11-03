@@ -36,6 +36,32 @@ public class JdbcTransactionDao implements TransactionDao{
         return true;
     }
 
+    @Override
+    public boolean createRequest(int sender_id, int receiver_id, double transfer_amount) {
+        String sql = "INSERT INTO transaction(sender_id, receiver_id, transfer_amount, status)\n" +
+                "VALUES ((SELECT account_id FROM account WHERE user_id =?), " +
+                "(SELECT account_id FROM account WHERE user_id =?), ?, 'pending') RETURNING transaction_id;";
+        try{
+            Integer newId = this.jdbcTemplate.queryForObject(sql, Integer.class, sender_id, receiver_id, transfer_amount);
+        } catch (DataAccessException e){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean respondToRequest(int transaction_id, String status) {
+        String sql = "UPDATE transaction\n" +
+                "SET status = ?\n" +
+                "WHERE transaction_id = ?;";
+        try{
+            this.jdbcTemplate.update(sql, status, transaction_id);
+        } catch (DataAccessException e){
+            return false;
+        }
+        return true;
+    }
+
 
     @Override
     public List<Transaction> listTransactionsByUserId(long user_id) {
@@ -93,6 +119,19 @@ public class JdbcTransactionDao implements TransactionDao{
         Transaction transaction = null;
         if(results.next()){
             transaction = mapRowSet(results);
+        }
+        return transaction;
+    }
+    @Override
+    public Transaction findAccountsByTransactionId(int transaction_id) {
+        String sql = "SELECT sender_id, receiver_id " +
+                "FROM transaction " +
+                "WHERE transaction_id = ?;";
+        SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, transaction_id);
+        Transaction transaction = null;
+        if(results.next()){
+            transaction.setSender_id(results.getInt("sender_id"));
+            transaction.setReceiver_id(results.getInt("receiver_id"));
         }
         return transaction;
     }

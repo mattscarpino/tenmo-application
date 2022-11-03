@@ -57,13 +57,13 @@ public class TransactionController {
 
 
         if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || sender_id == receiver_id){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make .");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
         }
 
         boolean b = transactionDao.sendTransaction(sender_id,receiver_id,transfer_amount);
 
         if (!b) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, " to make transaction");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction");
         }
 
         Account otherAccount = accountDao.getAccountsById(receiver_id);
@@ -77,7 +77,47 @@ public class TransactionController {
 
     }
 
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/request")
+    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam(value = "sender_id") int receiver_id, @RequestParam double transfer_amount){
+
+        User user = userDao.findByUsername(principal.getName());
+
+        if(user.getId() == sender_id){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer to self");
+        }
+
+        transactionDao.createRequest(sender_id,receiver_id,transfer_amount);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/request/response")
+    public void initiateResponseToRequest(@RequestParam int transaction_id, @RequestParam String status) {
+
+            if(!status.equalsIgnoreCase("approved") && !status.equalsIgnoreCase("rejected")){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad status type");
+            }
+
+            transactionDao.respondToRequest(transaction_id, status);
+
+
+            if(status.equalsIgnoreCase("approved")){
+
+                Transaction transaction = this.transactionDao.findAccountsByTransactionId(transaction_id);
+                Account senderAccount = accountDao.getAccountByAccountId(transaction.getSender_id());
+                Account receiverAccount = accountDao.getAccountByAccountId(transaction.getReceiver_id());
+
+                senderAccount.subtractFromBalance(transaction.getTransfer_amount());
+                receiverAccount.addToBalance(transaction.getTransfer_amount());
+
+                accountDao.update(senderAccount.getAccount_id(),senderAccount.getBalance());
+                accountDao.update(receiverAccount.getAccount_id(), receiverAccount.getBalance());
+            }
+    }
+
+        @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/list")
     public List<String> listAllTransactionByUser(Principal principal){

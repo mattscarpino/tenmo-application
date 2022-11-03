@@ -52,6 +52,14 @@ public class Transaction {
         transfer_amount = num;
     }
 
+    public void setSender_id(int sender_id) {
+        this.sender_id = sender_id;
+    }
+
+    public void setReceiver_id(int receiver_id) {
+        this.receiver_id = receiver_id;
+    }
+
     @Override
     public String toString(){
         return "transaction_id - " +transaction_id + "  |   transfer_amount - " + transfer_amount + "  |   status - " + status;
