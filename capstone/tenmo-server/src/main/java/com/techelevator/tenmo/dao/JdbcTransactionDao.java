@@ -116,7 +116,7 @@ public class JdbcTransactionDao implements TransactionDao{
                 "WHERE transaction_id = ? AND (sender_id = (SELECT account_id FROM account WHERE user_id = ?) " +
                 "OR receiver_id = (SELECT account_id FROM account WHERE user_id = ?));";
         SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, transaction_id, user_id, user_id);
-        Transaction transaction = null;
+        Transaction transaction = new Transaction();
         if(results.next()){
             transaction = mapRowSet(results);
         }
@@ -124,14 +124,15 @@ public class JdbcTransactionDao implements TransactionDao{
     }
     @Override
     public Transaction findAccountsByTransactionId(int transaction_id) {
-        String sql = "SELECT sender_id, receiver_id " +
+        String sql = "SELECT sender_id, receiver_id, transfer_amount " +
                 "FROM transaction " +
                 "WHERE transaction_id = ?;";
         SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, transaction_id);
-        Transaction transaction = null;
+        Transaction transaction = new Transaction();
         if(results.next()){
             transaction.setSender_id(results.getInt("sender_id"));
             transaction.setReceiver_id(results.getInt("receiver_id"));
+            transaction.setTransfer_amount(results.getDouble("transfer_amount"));
         }
         return transaction;
     }

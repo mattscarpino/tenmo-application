@@ -40,7 +40,7 @@ public class JdbcAccountDao implements AccountDao{
                 "WHERE user_id = ?;";
 
         SqlRowSet result = jdbcTemplate.queryForRowSet(sql,user_id);
-        Account a = null;
+        Account a = new Account();
         if (result.next()){
             a = new Account(result.getInt("account_id"),
                                     result.getInt("user_id"),
@@ -61,7 +61,7 @@ public class JdbcAccountDao implements AccountDao{
                 "FROM account " +
                 "WHERE account_id = ?;";
         SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, account_id);
-        Account account = null;
+        Account account = new Account();
         if (results.next()){
             account = new Account(
                     account_id,

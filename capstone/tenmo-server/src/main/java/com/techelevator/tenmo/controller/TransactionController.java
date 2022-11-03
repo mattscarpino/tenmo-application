@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("user/{sender_id}/transaction")
+@RequestMapping("user/{user_id}/transaction")
 @PreAuthorize("isAuthenticated()")
 public class TransactionController {
 
@@ -80,7 +80,7 @@ public class TransactionController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/request")
-    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam(value = "sender_id") int receiver_id, @RequestParam double transfer_amount){
+    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount, @PathVariable int user_id){
 
         User user = userDao.findByUsername(principal.getName());
 
@@ -100,10 +100,10 @@ public class TransactionController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad status type");
             }
 
-            transactionDao.respondToRequest(transaction_id, status);
+        transactionDao.respondToRequest(transaction_id, status);
 
 
-            if(status.equalsIgnoreCase("approved")){
+        if(status.equalsIgnoreCase("approved")){
 
                 Transaction transaction = this.transactionDao.findAccountsByTransactionId(transaction_id);
                 Account senderAccount = accountDao.getAccountByAccountId(transaction.getSender_id());
