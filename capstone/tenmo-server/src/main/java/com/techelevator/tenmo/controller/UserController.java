@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.controller;
 
+import com.techelevator.tenmo.dao.JdbcUserDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.User;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,6 @@ public class UserController {
 
         return user;
     }
-
 
 
 }

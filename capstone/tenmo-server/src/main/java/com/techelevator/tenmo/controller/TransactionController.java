@@ -109,7 +109,6 @@ public class TransactionController {
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/request")
     public void initiateRequest(Principal principal, @RequestParam long sender_id, @RequestParam double transfer_amount){
-
         User user = userDao.findByUsername(principal.getName());
         Account account = accountDao.getAccountsById(user.getId());
 
