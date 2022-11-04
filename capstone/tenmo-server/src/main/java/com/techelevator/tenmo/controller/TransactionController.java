@@ -1,7 +1,6 @@
 package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.dao.AccountDao;
-import com.techelevator.tenmo.dao.JdbcAccountDao;
 import com.techelevator.tenmo.dao.TransactionDao;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Account;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("user/{user_id}/transaction")
+@RequestMapping("user/transaction")
 @PreAuthorize("isAuthenticated()")
 public class TransactionController {
 
@@ -31,36 +30,50 @@ public class TransactionController {
         this.accountDao = accountDao;
     }
 
-    @ResponseStatus(HttpStatus.FOUND)
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping()
-    public List<String> listUsersForTransaction(){
 
-        List<User> user = this.userDao.listAllUsers();
-        List<String> idAndUsername = new ArrayList<>();
-        for(User u : user){
-            String word = "username: " + u.getUsername();
-            idAndUsername.add(word);
-            String www = "      user_id: " + u.getId();
-            idAndUsername.add(www);
-        }
-
-        return idAndUsername;
-    }
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @PreAuthorize("hasRole('USER')")
+//    @PostMapping("/send")
+//    public void initiateTransaction(@RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount){
+//
+//        Account userAccount = accountDao.getAccountsById(sender_id);
+//
+//
+//        if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || sender_id == receiver_id){
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
+//        }
+//
+//        boolean b = transactionDao.sendTransaction(sender_id,receiver_id,transfer_amount);
+//
+//        if (!b) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction");
+//        }
+//
+//        Account otherAccount = accountDao.getAccountsById(receiver_id);
+//
+//        otherAccount.addToBalance(transfer_amount);
+//        userAccount.subtractFromBalance(transfer_amount);
+//
+//
+//        accountDao.update(userAccount.getAccount_id(), userAccount.getBalance());
+//        accountDao.update(otherAccount.getAccount_id(), otherAccount.getBalance());
+//
+//    }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("/{receiver_id}")
-    public void initiateTransaction(@RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount){
+    @PostMapping("/send")
+    public void initiateTransaction(Principal principal, @RequestParam long receiver_id, @RequestParam double transfer_amount){
 
-        Account userAccount = accountDao.getAccountsById(sender_id);
+        User user = userDao.findByUsername(principal.getName());
+        Account userAccount = accountDao.getAccountsById(user.getId());
 
 
-        if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || sender_id == receiver_id){
+        if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || user.getId() == receiver_id){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
         }
 
-        boolean b = transactionDao.sendTransaction(sender_id,receiver_id,transfer_amount);
+        boolean b = transactionDao.sendTransaction(user.getId(),receiver_id,transfer_amount);
 
         if (!b) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction");
@@ -77,55 +90,88 @@ public class TransactionController {
 
     }
 
+//    @ResponseStatus(HttpStatus.CREATED)
+//    @PreAuthorize("hasRole('USER')")
+//    @PostMapping("/request")
+//    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount, @PathVariable int user_id){
+//
+//        User user = userDao.findByUsername(principal.getName());
+//        Account account = accountDao.getAccountsById(user.getId());
+//
+//        if(user.getId() == sender_id || transfer_amount <= 0 || transfer_amount > account.getBalance()){
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transfer attempt");
+//        }
+//
+//        transactionDao.createRequest(sender_id,receiver_id,transfer_amount);
+//    }
+
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/request")
-    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount, @PathVariable int user_id){
+    public void initiateRequest(Principal principal, @RequestParam long sender_id, @RequestParam double transfer_amount){
 
         User user = userDao.findByUsername(principal.getName());
+        Account account = accountDao.getAccountsById(user.getId());
 
-        if(user.getId() == sender_id){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer to self");
+        if(user.getId() == sender_id || transfer_amount <= 0 || transfer_amount > account.getBalance()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transfer attempt");
         }
 
-        transactionDao.createRequest(sender_id,receiver_id,transfer_amount);
+        transactionDao.createRequest(sender_id,user.getId(),transfer_amount);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
     @PutMapping("/request/response")
-    public void initiateResponseToRequest(@RequestParam int transaction_id, @RequestParam String status) {
+    public void initiateResponseToRequest(@RequestParam long transaction_id, @RequestParam String status) {
 
-            if(!status.equalsIgnoreCase("approved") && !status.equalsIgnoreCase("rejected")){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad status type");
-            }
+        if(!status.equalsIgnoreCase("approved") && !status.equalsIgnoreCase("rejected")){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad status type");
+        }
 
         transactionDao.respondToRequest(transaction_id, status);
 
 
         if(status.equalsIgnoreCase("approved")){
 
-                Transaction transaction = this.transactionDao.findAccountsByTransactionId(transaction_id);
-                Account senderAccount = accountDao.getAccountByAccountId(transaction.getSender_id());
-                Account receiverAccount = accountDao.getAccountByAccountId(transaction.getReceiver_id());
+            Transaction transaction = this.transactionDao.findAccountsByTransactionId(transaction_id);
+            Account senderAccount = accountDao.getAccountByAccountId(transaction.getSender_id());
+            Account receiverAccount = accountDao.getAccountByAccountId(transaction.getReceiver_id());
 
-                senderAccount.subtractFromBalance(transaction.getTransfer_amount());
-                receiverAccount.addToBalance(transaction.getTransfer_amount());
+            senderAccount.subtractFromBalance(transaction.getTransfer_amount());
+            receiverAccount.addToBalance(transaction.getTransfer_amount());
 
-                accountDao.update(senderAccount.getAccount_id(),senderAccount.getBalance());
-                accountDao.update(receiverAccount.getAccount_id(), receiverAccount.getBalance());
-            }
+            accountDao.update(senderAccount.getAccount_id(),senderAccount.getBalance());
+            accountDao.update(receiverAccount.getAccount_id(), receiverAccount.getBalance());
+        }
     }
 
-        @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/list")
-    public List<String> listAllTransactionByUser(Principal principal){
+    public List<String> listAllTransactionByUser(Principal principal, @RequestParam String type){
+
+        if(!type.equalsIgnoreCase("sent") && !type.equalsIgnoreCase("received") && !type.equalsIgnoreCase("pending")){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "incorrect path");
+        }
 
         String username = principal.getName();
         User user = userDao.findByUsername(username);
 
-        List<Transaction> transactions = transactionDao.listTransactionsByUserId(user.getId());
+        List<Transaction> transactions;
+
+        if(type.equalsIgnoreCase("sent")){
+
+            transactions = transactionDao.listAllSentTransactions(user.getId());
+
+        } else if(type.equalsIgnoreCase("received")){
+
+            transactions = transactionDao.listAllReceivedTransactions(user.getId());
+
+        } else{
+
+            transactions = transactionDao.listAllPendingTransactions(user.getId());
+        }
         List<String> all = new ArrayList<>();
 
         for(Transaction t : transactions){
@@ -135,46 +181,11 @@ public class TransactionController {
         return all;
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/list/sent")
-    public List<String> listAllTransactionsSentByUser(Principal principal){
-
-        String username = principal.getName();
-        User user = userDao.findByUsername(username);
-
-        List<Transaction> transactions = transactionDao.listAllSentTransactions(user.getId());
-        List<String> all = new ArrayList<>();
-
-        for(Transaction t : transactions){
-            all.add(t.toString());
-        }
-
-        return all;
-    }
 
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
-    @GetMapping("/list/received")
-    public List<String> listAllTransactionReceivedByUser(Principal principal){
-
-        String username = principal.getName();
-        User user = userDao.findByUsername(username);
-
-        List<Transaction> transactions = transactionDao.listAllReceivedTransactions(user.getId());
-        List<String> all = new ArrayList<>();
-
-        for(Transaction t : transactions){
-            all.add(t.toString());
-        }
-
-        return all;
-    }
-
-    @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/{transaction_id}")
-    public String getTransactionById(@PathVariable int transaction_id,Principal principal){
+    @GetMapping("/find")
+    public String getTransactionById(@RequestParam long transaction_id,Principal principal){
 
         String username = principal.getName();
         User user = userDao.findByUsername(username);

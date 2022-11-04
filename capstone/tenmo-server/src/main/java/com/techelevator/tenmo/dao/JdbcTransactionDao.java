@@ -23,9 +23,9 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public boolean sendTransaction(int sender_id, int receiver_id, double transfer_amount) {
+    public boolean sendTransaction(long sender_id, long receiver_id, double transfer_amount) {
         String sql = "INSERT INTO transaction(sender_id, receiver_id, transfer_amount, status)\n" +
-                    "VALUES ((SELECT account_id FROM account WHERE user_id =?), " +
+                "VALUES ((SELECT account_id FROM account WHERE user_id =?), " +
                 "(SELECT account_id FROM account WHERE user_id =?), ?, 'approved') RETURNING transaction_id;";
         try{
             Integer newId = this.jdbcTemplate.queryForObject(sql, Integer.class, sender_id, receiver_id, transfer_amount);
@@ -37,7 +37,7 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public boolean createRequest(int sender_id, int receiver_id, double transfer_amount) {
+    public boolean createRequest(long sender_id, long receiver_id, double transfer_amount) {
         String sql = "INSERT INTO transaction(sender_id, receiver_id, transfer_amount, status)\n" +
                 "VALUES ((SELECT account_id FROM account WHERE user_id =?), " +
                 "(SELECT account_id FROM account WHERE user_id =?), ?, 'pending') RETURNING transaction_id;";
@@ -50,7 +50,7 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public boolean respondToRequest(int transaction_id, String status) {
+    public boolean respondToRequest(long transaction_id, String status) {
         String sql = "UPDATE transaction\n" +
                 "SET status = ?\n" +
                 "WHERE transaction_id = ?;";
@@ -110,7 +110,22 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
-    public Transaction findTransactionById(int transaction_id, long user_id) {
+    public List<Transaction> listAllPendingTransactions(long user_id) {
+        String sql = "SELECT transaction_id, transfer_amount, status\n" +
+                "FROM transaction\n" +
+                "WHERE sender_id = (SELECT account_id FROM account WHERE user_id = ?) AND status = 'pending';";
+        SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, user_id);
+
+        List<Transaction> transactions = new ArrayList<>();
+        while(results.next()){
+            Transaction transaction = mapRowSet(results);
+            transactions.add(transaction);
+        }
+        return transactions;
+    }
+
+    @Override
+    public Transaction findTransactionById(long transaction_id, long user_id) {
         String sql = "SELECT transaction_id, transfer_amount, status " +
                 "FROM transaction " +
                 "WHERE transaction_id = ? AND (sender_id = (SELECT account_id FROM account WHERE user_id = ?) " +
@@ -123,7 +138,7 @@ public class JdbcTransactionDao implements TransactionDao{
         return transaction;
     }
     @Override
-    public Transaction findAccountsByTransactionId(int transaction_id) {
+    public Transaction findAccountsByTransactionId(long transaction_id) {
         String sql = "SELECT sender_id, receiver_id, transfer_amount " +
                 "FROM transaction " +
                 "WHERE transaction_id = ?;";
@@ -136,6 +151,7 @@ public class JdbcTransactionDao implements TransactionDao{
         }
         return transaction;
     }
+
 
     public Transaction mapRowSet(SqlRowSet rowSet){
         Transaction transaction = new Transaction();

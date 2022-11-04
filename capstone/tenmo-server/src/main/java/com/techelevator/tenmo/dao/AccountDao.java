@@ -6,8 +6,10 @@ import java.util.List;
 
 public interface AccountDao {
 
-    boolean create(int user_id);
-    Account getAccountsById(int user_id);
-    void update(int account_id, double balance);
-    Account getAccountByAccountId(int account_id);
+    boolean create(long user_id);
+    Account getAccountsById(long user_id);
+
+    Account getAccountByAccountId(long account_id);
+
+    void update(long account_id, double balance);
 }

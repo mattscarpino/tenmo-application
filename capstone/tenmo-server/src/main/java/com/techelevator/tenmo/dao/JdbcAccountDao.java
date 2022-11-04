@@ -6,9 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 public class JdbcAccountDao implements AccountDao{
 
@@ -19,7 +16,7 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public boolean create(int user_id) {
+    public boolean create(long user_id) {
 
         String sql = "INSERT INTO account (user_id, balance)\n" +
                 "VALUES (?,1000);";
@@ -34,7 +31,7 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public Account getAccountsById(int user_id) {
+    public Account getAccountsById(long user_id) {
         String sql = "SELECT account_id, user_id, balance\n" +
                 "FROM account\n" +
                 "WHERE user_id = ?;";
@@ -50,13 +47,13 @@ public class JdbcAccountDao implements AccountDao{
     }
 
     @Override
-    public void update(int account_id, double balance) {
+    public void update(long account_id, double balance) {
         String sql = "UPDATE account SET balance = ? WHERE account_id = ?;";
         this.jdbcTemplate.update(sql,balance,account_id);
     }
 
     @Override
-    public Account getAccountByAccountId(int account_id) {
+    public Account getAccountByAccountId(long account_id) {
         String sql = "SELECT user_id, balance " +
                 "FROM account " +
                 "WHERE account_id = ?;";

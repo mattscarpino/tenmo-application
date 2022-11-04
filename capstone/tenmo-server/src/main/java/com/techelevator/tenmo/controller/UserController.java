@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -17,27 +18,31 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public class UserController {
 
-    private UserDao userdao;
+    private UserDao userDao;
 
-    public UserController(UserDao userdao){
-        this.userdao = userdao;
+    public UserController(UserDao userDao){
+        this.userDao = userDao;
     }
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @GetMapping()
-//    public List<User> getAllUsers(){
-//        return userdao.findAll();
-//    }
 
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
     @GetMapping()
     public User getCurrentUser(Principal principal){
-        return userdao.findByUsername(principal.getName());
+        return userDao.findByUsername(principal.getName());
     }
 
-//    @PreAuthorize("hasRole('USER')")
-//    @GetMapping("/list")
-//
+    @ResponseStatus(HttpStatus.FOUND)
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/list")
+    public List<User> listUsersForTransaction(){
+
+        List<User> user = this.userDao.listAllUsers();
+
+
+        return user;
+    }
+
+
 
 }
