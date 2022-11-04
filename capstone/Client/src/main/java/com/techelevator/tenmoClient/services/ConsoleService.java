@@ -1,5 +1,7 @@
 package com.techelevator.tenmoClient.services;
 
+import com.techelevator.tenmoClient.model.User;
+
 import java.util.Scanner;
 
 public class ConsoleService {
@@ -31,9 +33,25 @@ public class ConsoleService {
 
     }
 
+
     public String promptForString(String prompt) {
         System.out.print(prompt);
         return scanner.nextLine();
+    }
+
+    public double promptForAmount (String prompt){
+        double amount;
+        while(true) {
+            try {
+                System.out.println(prompt);
+                String amountAsString = scanner.nextLine();
+                amount = Double.parseDouble(amountAsString);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid entry.");
+            }
+        }
+        return amount;
     }
 
     public void printErrorMessage() {
@@ -50,5 +68,10 @@ public class ConsoleService {
         System.out.printf("Your current account balance is: $%.2f\n", balance);
     }
 
+    public void displayAllUsers(User[] users){
+        for(User u : users){
+            System.out.println("username: " + u.getUsername() + "\t || \t user-id: "+ u.getId());
+        }
+    }
 
 }

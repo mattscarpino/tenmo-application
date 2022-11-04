@@ -25,7 +25,7 @@ public class App {
             } else if (menuSelection == 2) {
                 displayBalance();
             } else if (menuSelection == 3) {
-           //     handleAddReservation();
+                makeTransaction();
             } else if (menuSelection == 4) {
             //    handleUpdateReservation();
             } else if (menuSelection == 5) {
@@ -61,4 +61,9 @@ public class App {
         consoleService.printBalance(tenmoService.getBalance());
     }
 
+    private void makeTransaction(){
+        consoleService.displayAllUsers(tenmoService.listAllUsers());
+        String userIdInput = consoleService.promptForString("Enter user-id: ");
+        double amountInput = consoleService.promptForAmount("How much would you like to send?: ");
+    }
 }
