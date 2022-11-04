@@ -1,5 +1,6 @@
 package com.techelevator.tenmoClient;
 
+import com.techelevator.tenmoClient.model.Transaction;
 import com.techelevator.tenmoClient.services.AuthenticationService;
 import com.techelevator.tenmoClient.services.ConsoleService;
 import com.techelevator.tenmoClient.services.TenmoService;
@@ -63,7 +64,13 @@ public class App {
 
     private void makeTransaction(){
         consoleService.displayAllUsers(tenmoService.listAllUsers());
-        String userIdInput = consoleService.promptForString("Enter user-id: ");
+        int userIdInput = consoleService.promptForInt("Enter user-id: ");
         double amountInput = consoleService.promptForAmount("How much would you like to send?: ");
+        Transaction transaction = new Transaction();
+        transaction.setReceiver_id(userIdInput);
+        transaction.setTransfer_amount(amountInput);
+        Transaction t = tenmoService.sendTransaction(transaction);
+
+        System.out.println(t.getTransfer_amount());
     }
 }

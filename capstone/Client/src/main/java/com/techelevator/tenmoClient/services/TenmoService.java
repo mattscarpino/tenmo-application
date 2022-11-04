@@ -68,8 +68,4 @@ public class TenmoService {
         return new HttpEntity<>(headers);
     }
 
-    public Transaction sendTransaction(){
-
-    }
-
 }

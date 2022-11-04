@@ -33,6 +33,20 @@ public class ConsoleService {
 
     }
 
+    public int promptForInt(String prompt) {
+        int amount;
+        while(true) {
+            try {
+                System.out.println(prompt);
+                String amountAsString = scanner.nextLine();
+                amount = Integer.parseInt(amountAsString);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid entry.");
+            }
+        }
+        return amount;
+    }
 
     public String promptForString(String prompt) {
         System.out.print(prompt);
