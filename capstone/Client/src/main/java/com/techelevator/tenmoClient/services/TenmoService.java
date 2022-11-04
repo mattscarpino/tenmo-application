@@ -45,10 +45,12 @@ public class TenmoService {
         return users;
     }
 
-    public Transaction sendTransaction(Transaction newTransaction){
+    public Transaction sendTransaction(int user_id, double amount){
         Transaction transaction = null;
+//        ?receiver_id=1002&transfer_amount=15
         try{
-            transaction = restTemplate.postForObject(API_BASE_URL+ "user/transaction/send", makeTransactionEntity(newTransaction), Transaction.class);
+            transaction = restTemplate.postForObject(API_BASE_URL+ "user/transaction/send?receiver_id=" + user_id +
+                    "&transfer_amount=" + amount, makeAuthEntity(), Transaction.class);
         } catch (RestClientResponseException | ResourceAccessException e){
             System.out.println("Invalid.");
         }

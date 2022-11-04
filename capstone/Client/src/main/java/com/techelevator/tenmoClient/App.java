@@ -66,11 +66,8 @@ public class App {
         consoleService.displayAllUsers(tenmoService.listAllUsers());
         int userIdInput = consoleService.promptForInt("Enter user-id: ");
         double amountInput = consoleService.promptForAmount("How much would you like to send?: ");
-        Transaction transaction = new Transaction();
-        transaction.setReceiver_id(userIdInput);
-        transaction.setTransfer_amount(amountInput);
-        Transaction t = tenmoService.sendTransaction(transaction);
 
-        System.out.println(t.getTransfer_amount());
+        tenmoService.sendTransaction(userIdInput,amountInput);
+        
     }
 }
