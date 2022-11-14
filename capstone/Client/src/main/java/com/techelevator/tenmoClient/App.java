@@ -21,7 +21,9 @@ public class App {
         while (menuSelection != 7) {
             consoleService.displayMainMenu();
             menuSelection = consoleService.promptForMenuSelection("Please choose an option: ");
-            if (menuSelection == 1) {
+            if(menuSelection == 0){
+//                handleRegistration();
+            } else if (menuSelection == 1) {
                 handleLogin();
             } else if (menuSelection == 2) {
                 displayBalance();
@@ -68,6 +70,13 @@ public class App {
         double amountInput = consoleService.promptForAmount("How much would you like to send?: ");
 
         tenmoService.sendTransaction(userIdInput,amountInput);
-        
+
     }
+
+//    private void handleRegistration(){
+//        String username = consoleService.promptForString("Username: ");
+//        String password = consoleService.promptForString("Password: ");
+//        boolean complete = tenmoService.registerAccount(username, password);
+//        consoleService.successfulRegistration(complete);
+//    }
 }

@@ -1,10 +1,13 @@
 package com.techelevator.tenmoClient.services;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.techelevator.tenmoClient.model.Account;
+import com.techelevator.tenmoClient.model.RegisterUserDTO;
 import com.techelevator.tenmoClient.model.Transaction;
 import com.techelevator.tenmoClient.model.User;
 import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,6 +59,20 @@ public class TenmoService {
         }
         return transaction;
     }
+
+//    public boolean registerAccount(String username, String password){
+//        RegisterUserDTO registerUserDTO = new RegisterUserDTO(username, password);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<RegisterUserDTO> response = new HttpEntity<>(registerUserDTO, headers);
+//        try{
+//            restTemplate.postForObject(API_BASE_URL + "register", response, Void.class);
+//        } catch (RestClientResponseException | ResourceAccessException e){
+//            System.out.println("could not complete registration");
+//            return false;
+//        }
+//        return true;
+//    }
 
     private HttpEntity<Transaction> makeTransactionEntity(Transaction transaction) {
         HttpHeaders headers = new HttpHeaders();

@@ -23,6 +23,7 @@ public class ConsoleService {
 
         System.out.println();
         System.out.println("------- Welcome to Tenmo! --------");
+        System.out.println("0) Sign Up");
         System.out.println("1) Login");
         System.out.println("2) Display balance");
         System.out.println("3) Send Money");
@@ -85,6 +86,14 @@ public class ConsoleService {
     public void displayAllUsers(User[] users){
         for(User u : users){
             System.out.println("username: " + u.getUsername() + "\t || \t user-id: "+ u.getId());
+        }
+    }
+
+    public void successfulRegistration(boolean complete){
+        if(complete){
+            System.out.println("Registration was Successful!");
+        } else{
+            System.out.println("Registration failed");
         }
     }
 
