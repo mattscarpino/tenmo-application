@@ -61,10 +61,10 @@ public class TenmoService {
     }
 
 //    public boolean registerAccount(String username, String password){
-//        RegisterUserDTO registerUserDTO = new RegisterUserDTO(username, password);
+//        RegisterUserDTO newUser = new RegisterUserDTO(username, password);
 //        HttpHeaders headers = new HttpHeaders();
 //        headers.setContentType(MediaType.APPLICATION_JSON);
-//        HttpEntity<RegisterUserDTO> response = new HttpEntity<>(registerUserDTO, headers);
+//        HttpEntity<RegisterUserDTO> response = new HttpEntity<>(newUser, headers);
 //        try{
 //            restTemplate.postForObject(API_BASE_URL + "register", response, Void.class);
 //        } catch (RestClientResponseException | ResourceAccessException e){
