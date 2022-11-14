@@ -15,6 +15,8 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
+
+//change all mapping locations to fit api standards
 @RestController
 @RequestMapping("user/transaction")
 @PreAuthorize("isAuthenticated()")
@@ -38,7 +40,7 @@ public class TransactionController {
         User user = userDao.findByUsername(principal.getName());
         Account userAccount = accountDao.getAccountsById(user.getId());
 
-
+        // create separate error responses for each
         if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || user.getId() == receiver_id){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
         }
@@ -60,21 +62,6 @@ public class TransactionController {
 
     }
 
-//    @ResponseStatus(HttpStatus.CREATED)
-//    @PreAuthorize("hasRole('USER')")
-//    @PostMapping("/request")
-//    public void initiateRequest(Principal principal, @RequestParam int sender_id, @RequestParam int receiver_id, @RequestParam double transfer_amount, @PathVariable int user_id){
-//
-//        User user = userDao.findByUsername(principal.getName());
-//        Account account = accountDao.getAccountsById(user.getId());
-//
-//        if(user.getId() == sender_id || transfer_amount <= 0 || transfer_amount > account.getBalance()){
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transfer attempt");
-//        }
-//
-//        transactionDao.createRequest(sender_id,receiver_id,transfer_amount);
-//    }
-
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/request")
@@ -82,6 +69,7 @@ public class TransactionController {
         User user = userDao.findByUsername(principal.getName());
         Account account = accountDao.getAccountsById(user.getId());
 
+        // create individual error messages
         if(user.getId() == sender_id || transfer_amount <= 0 || transfer_amount > account.getBalance()){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transfer attempt");
         }
@@ -98,6 +86,8 @@ public class TransactionController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad status type");
         }
 
+        //make it so that you cannot update a status of approved or rejected
+        //can only respond to request where you are the sender_id
         transactionDao.respondToRequest(transaction_id, status);
 
 
@@ -131,6 +121,7 @@ public class TransactionController {
 
         if(type.equalsIgnoreCase("sent")){
 
+            // make the dao for sent received and pending all the same
             transactions = transactionDao.listAllSentTransactions(user.getId());
 
         } else if(type.equalsIgnoreCase("received")){
