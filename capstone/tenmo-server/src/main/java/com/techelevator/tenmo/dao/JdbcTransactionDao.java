@@ -125,6 +125,22 @@ public class JdbcTransactionDao implements TransactionDao{
     }
 
     @Override
+    public List<Transaction> listAllUserTransactions(long sender_id, long receiver_id, String status) {
+        String sql = "SELECT transaction_id, transfer_amount, status\n" +
+                "FROM transaction\n" +
+                "WHERE receiver_id = (SELECT account_id FROM account WHERE user_id = ?) OR " +
+                "sender_id = (SELECT account_id FROM account WHERE user_id = ?) AND status = ?;";
+        SqlRowSet results = this.jdbcTemplate.queryForRowSet(sql, receiver_id, sender_id, status);
+
+        List<Transaction> transactions = new ArrayList<>();
+        while(results.next()){
+            Transaction transaction = mapRowSet(results);
+            transactions.add(transaction);
+        }
+        return transactions;
+    }
+
+    @Override
     public Transaction findTransactionById(long transaction_id, long user_id) {
         String sql = "SELECT transaction_id, transfer_amount, status " +
                 "FROM transaction " +

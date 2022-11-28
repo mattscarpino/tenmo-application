@@ -40,9 +40,17 @@ public class TransactionController {
         User user = userDao.findByUsername(principal.getName());
         Account userAccount = accountDao.getAccountsById(user.getId());
 
-        // create separate error responses for each
-        if(userAccount.getBalance() < transfer_amount || transfer_amount <= 0 || user.getId() == receiver_id){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to make transaction.");
+        if(user.getId() == receiver_id){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: cannot send money to yourself");
+
+        } else if(transfer_amount <= 0){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: request negative amount of money");
+
+        } else if(transfer_amount > userAccount.getBalance()){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: not enough money in your account");
         }
 
         boolean b = transactionDao.sendTransaction(user.getId(),receiver_id,transfer_amount);
@@ -69,9 +77,17 @@ public class TransactionController {
         User user = userDao.findByUsername(principal.getName());
         Account account = accountDao.getAccountsById(user.getId());
 
-        // create individual error messages
-        if(user.getId() == sender_id || transfer_amount <= 0 || transfer_amount > account.getBalance()){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid transfer attempt");
+        if(user.getId() == sender_id){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: cannot send money to yourself");
+
+        } else if(transfer_amount <= 0){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: request negative amount of money");
+
+        } else if(transfer_amount > account.getBalance()){
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ERROR: not enough money in your account");
         }
 
         transactionDao.createRequest(sender_id,user.getId(),transfer_amount);
@@ -108,7 +124,7 @@ public class TransactionController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/list")
-    public List<String> listAllTransactionByUser(Principal principal, @RequestParam String type){
+    public List<Transaction> listAllTransactionByUser(Principal principal, @RequestParam String type){
 
         if(!type.equalsIgnoreCase("sent") && !type.equalsIgnoreCase("received") && !type.equalsIgnoreCase("pending")){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "incorrect path");
@@ -122,23 +138,19 @@ public class TransactionController {
         if(type.equalsIgnoreCase("sent")){
 
             // make the dao for sent received and pending all the same
-            transactions = transactionDao.listAllSentTransactions(user.getId());
-
+//            transactions = transactionDao.listAllSentTransactions(user.getId());
+            transactions = transactionDao.listAllUserTransactions(-1, user.getId(), "approved");
         } else if(type.equalsIgnoreCase("received")){
 
-            transactions = transactionDao.listAllReceivedTransactions(user.getId());
-
+//            transactions = transactionDao.listAllReceivedTransactions(user.getId());
+            transactions = transactionDao.listAllUserTransactions(user.getId(), -1, "approved");
         } else{
 
-            transactions = transactionDao.listAllPendingTransactions(user.getId());
-        }
-        List<String> all = new ArrayList<>();
-
-        for(Transaction t : transactions){
-            all.add(t.toString());
+//            transactions = transactionDao.listAllPendingTransactions(user.getId());
+            transactions = transactionDao.listAllUserTransactions(user.getId(), -1, "pending");
         }
 
-        return all;
+        return transactions;
     }
 
 

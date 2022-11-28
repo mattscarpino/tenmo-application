@@ -15,6 +15,8 @@ public interface TransactionDao {
 
     List<Transaction> listAllPendingTransactions(long user_id);
 
+    List<Transaction> listAllUserTransactions(long sender_id, long receiver_id, String status);
+
     Transaction findTransactionById(long transaction_id, long user_id);
 
     Transaction findAccountsByTransactionId(long transaction_id);
